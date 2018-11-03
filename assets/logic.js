@@ -1,4 +1,8 @@
 // Initialize Firebase
+
+var currentTime = moment();
+console.log(currentTime);
+
 var config = {
     apiKey: "AIzaSyD_fGbpjWU6R3syHiwaxq4lr9T7w-QDZf0",
     authDomain: "homework-7-82510.firebaseapp.com",
@@ -12,6 +16,11 @@ var config = {
 firebase.initializeApp(config);
 
 var database = firebase.database();
+var firstTrain = "5:00";
+var firstTrainConverted = moment(firstTrain,"HH:mm").subtract(1,"years");
+var diffTime = moment().diff(moment(firstTrainConverted),"minutes");
+console.log(diffTime);
+
 
 
 //submit button click saving train info and trim 
@@ -20,10 +29,10 @@ $("#addTrainBtn").on("click",function(event){
 
     var trainName = $("#nameInput").val();
     var destinationName = $("#destinationInput").val();
-    var trainTime = $("#trainTimeInput").val();
-    var trainFrequency = $("#frequencyInput").val();
+    var trainTime = moment($("#trainTimeInput").val(),"HH:mm").format("X");
+    var trainFrequency = moment($("#frequencyInput").val(),"mm").format("mm");
 
-    
+    console.log(trainFrequency);
 
     var newTrainInfo = {
         name: trainName,
@@ -58,12 +67,24 @@ database.ref().on("child_added", function(childSnapshot){
     console.log(storedTrainTime);
     console.log(storedTrainFrequency);
 
-    var trainTimeConversion = moment.unix(storedTrainTime).format("HH.mm");
+    var trainTimeConversion = moment.unix(storedTrainTime).format("LT");
 
-    var nextArrival = trainTimeConversion + storedTrainFrequency;
+    console.log(trainTimeConversion);
 
-    var minutesAway = moment() - nextArrival;
+    //difference between the times
+    var diffTime = moment().diff(moment(firstTrainConverted),"minutes");
 
+    var tRemainder = diffTime % storedTrainFrequency;
+    console.log(tRemainder);
+
+    var minutesAway = storedTrainFrequency - tRemainder;
+    console.log(minutesAway);
+
+
+    var nextArrival = moment().add(minutesAway,"minutes").format("hh:mm");
+    console.log(nextArrival);
+
+ 
     var newRow = $("<tr>").append(
         $("<td>").text(storedTrainName),
         $("<td>").text(storedDestinationName),
@@ -80,5 +101,3 @@ database.ref().on("child_added", function(childSnapshot){
 });
 
 
-
-//
